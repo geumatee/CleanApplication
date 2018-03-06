@@ -1,0 +1,24 @@
+package io.heartworks.cleanapplication.dog.networking
+
+import android.support.annotation.IntRange
+import io.reactivex.Single
+import retrofit2.Call
+import retrofit2.http.GET
+import retrofit2.http.Query
+
+/**
+ * Created by geuma on 3/5/2018.
+ */
+
+/**
+ * This service is based on the dogs api
+ * http://docs.dogapi1.apiary.io/#reference/0/get-dog/get-a-random-dog
+ */
+interface DogApi {
+
+  /**
+   * You can request dogs from there - the limit is maxed to 20 per request
+   */
+  @GET("/v2/dog.php")
+  fun getRandom(@Query("limit") @IntRange(from = 1, to = 20) limit: Int): Single<DogsResponse>
+}
