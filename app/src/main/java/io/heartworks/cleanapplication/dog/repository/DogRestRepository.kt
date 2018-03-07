@@ -13,6 +13,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import io.realm.Realm
 import io.realm.RealmList
+import io.realm.RealmModel
+import io.realm.RealmQuery
 import org.reactivestreams.Publisher
 
 /**
@@ -40,22 +42,27 @@ class DogRestRepository(private val dogApi: DogApi, private val realm: Realm) : 
           Log.e("getRandomDogs", it.message)
           val data = DogsResponse()
           data.error = it.message
-          data
+          return@onErrorReturn data
         }
         .flatMapPublisher<RealmList<Dog>?> { dogsResponse: DogsResponse ->
-          //          if (dogsResponse.error != null) {
-//            throw RuntimeException(dogsResponse.error)
-//          }
           if (dogsResponse.error == null) {
-            writeToRealm(dogsResponse)
+            writeToRealm(DogsResponse::class.java,
+                {
+                  it ->
+                  it.data.clear()
+                  it.data.addAll(dogsResponse.data)
+                  it.count = dogsResponse.count
+                  return@writeToRealm it
+                }
+            )
           }
-          Flowable.just(dogsResponse.data)
+          return@flatMapPublisher Flowable.just(dogsResponse.data)
         }
         .observeOn(AndroidSchedulers.mainThread())
         .filter {
           it.isNotEmpty()
         }
-    val cache = Flowable.just(findInRealm()?.data)
+    val cache = Flowable.just(findInRealm(DogsResponse::class.java)?.data)
                         .filter {
                           it.isNotEmpty()
                         }
@@ -63,38 +70,32 @@ class DogRestRepository(private val dogApi: DogApi, private val realm: Realm) : 
         .flatMap {
           val list = mutableListOf<Dog>()
           list.addAll(it)
-          Flowable.just(list.toList())
+          return@flatMap Flowable.just(list.toList())
         }
         .distinct()
 
   }
 
-  private fun writeToRealm(data: DogsResponse) {
+  private fun <E : RealmModel> writeToRealm(clazz: Class<E>, listener: (E) -> E) {
     val realm = Realm.getDefaultInstance()
-    var dogsResponse = findInRealm()
+    var data = findInRealm(clazz)
     realm.executeTransaction {
-      if (dogsResponse == null || dogsResponse?.data?.size == 0) {
-        dogsResponse = it.createObject(DogsResponse::class.java)
+      if (data == null) {
+        data = it.createObject(clazz)
       }
-      dogsResponse?.data?.clear()
-      dogsResponse?.data?.addAll(data.data)
-      dogsResponse?.count = data.count
-      if (dogsResponse != null) {
-        it.insertOrUpdate(dogsResponse!!)
+      data = listener.invoke(data!!)
+      if (data != null) {
+        it.insertOrUpdate(data!!)
       }
-
-      it.insertOrUpdate(data)
+      it.insertOrUpdate(data!!)
     }
     realm.close()
   }
 
-  private fun findInRealm(): DogsResponse? {
+  private fun <E : RealmModel> findInRealm(clazz: Class<E>): E? {
     val realm = Realm.getDefaultInstance()
-    var data: DogsResponse? = realm.where(DogsResponse::class.java).findFirst()
+    val data: E? = realm.where(clazz).findFirst()
     realm.close()
-    if (data == null) {
-      data = DogsResponse()
-    }
     return data
   }
 }
