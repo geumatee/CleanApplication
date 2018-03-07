@@ -4,7 +4,6 @@ import android.app.Application
 import io.heartworks.cleanapplication.injection.AppModule
 import io.heartworks.cleanapplication.injection.ApplicationComponent
 import io.heartworks.cleanapplication.injection.DaggerApplicationComponent
-import io.realm.Realm
 
 /**
  * Created by geuma on 3/5/2018.
@@ -54,7 +53,5 @@ class KotlinApplication : Application() {
     // Inject application dependencies
     component.inject(this)
     appComponent = component
-
-    Realm.init(this)
   }
 }

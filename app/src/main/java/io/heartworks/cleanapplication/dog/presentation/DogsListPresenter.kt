@@ -1,23 +1,14 @@
 package io.heartworks.cleanapplication.dog.presentation
 
 import android.util.Log
-import com.playmoweb.store2store.utils.Filter
-import com.playmoweb.store2store.utils.FilterType
 import io.heartworks.cleanapplication.config.PresenterConfig
 import io.heartworks.cleanapplication.dog.data.Dog
 import io.heartworks.cleanapplication.dog.repository.DogRepository
-import io.heartworks.cleanapplication.dog.store.DogService
 import io.heartworks.cleanapplication.dog.view.DogsListView
 import io.reactivex.Flowable
-import io.reactivex.Single
-import io.reactivex.SingleEmitter
-import io.reactivex.SingleOnSubscribe
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.rxkotlin.toSingle
 import net.grandcentrix.thirtyinch.TiPresenter
 import net.grandcentrix.thirtyinch.rx2.RxTiPresenterDisposableHandler
-import org.reactivestreams.Publisher
-import org.reactivestreams.Subscriber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -50,9 +41,6 @@ class DogsListPresenter : TiPresenter<DogsListView>() {
    */
   @Inject
   lateinit var repository: DogRepository
-
-  @Inject
-  lateinit var service: DogService
 
   /**
    * Unsubscribes rx subscriptions when needed
@@ -107,22 +95,6 @@ class DogsListPresenter : TiPresenter<DogsListView>() {
           dogCache.addAll(dogs)
           return@map dogs
         }
-
-//    return Flowable.fromCallable { view!!.getViewModel().setLoading(true) }
-//        .subscribeOn(AndroidSchedulers.mainThread())
-//        .flatMap<List<Dog>> { _ ->
-//          service.all.map { data ->
-//            data.get()
-//          }
-//              .map { t: MutableList<Dog> ->
-//                t.toList()
-//              }
-//        }
-//        .map { dogs ->
-//          dogCache.clear()
-//          dogCache.addAll(dogs)
-//          return@map dogs
-//        }
   }
 
   /**

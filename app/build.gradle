@@ -6,8 +6,6 @@ apply plugin: 'kotlin-android-extensions'
 
 apply plugin: 'kotlin-kapt'
 
-apply plugin: 'realm-android'
-
 ext {
     baseVersionName = "1.0"
     baseApplicationId = "io.heartworks.cleanapplication"
@@ -45,10 +43,6 @@ android {
 
 kapt {
     generateStubs = true
-}
-
-realm {
-    syncEnabled = true
 }
 
 dependencies {
