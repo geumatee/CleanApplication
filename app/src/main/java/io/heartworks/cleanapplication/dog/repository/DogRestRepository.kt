@@ -49,18 +49,17 @@ class DogRestRepository(private val dogApi: DogApi, private val realm: Realm) : 
           if (dogsResponse.error == null) {
             writeToRealm(dogsResponse)
           }
-          Observable.just(dogsResponse.data).toFlowable(BackpressureStrategy.LATEST)!!
+          Flowable.just(dogsResponse.data)
         }
         .observeOn(AndroidSchedulers.mainThread())
         .filter {
           it.isNotEmpty()
         }
-    return Flowable.merge(api,
-        Observable.just(findInRealm()?.data)
-            .filter {
-              it.isNotEmpty()
-            }
-            .toFlowable(BackpressureStrategy.LATEST))
+    val cache = Flowable.just(findInRealm()?.data)
+                        .filter {
+                          it.isNotEmpty()
+                        }
+    return Flowable.merge(api, cache)
         .flatMap {
           val list = mutableListOf<Dog>()
           list.addAll(it)
@@ -70,7 +69,7 @@ class DogRestRepository(private val dogApi: DogApi, private val realm: Realm) : 
 
   }
 
-  private fun writeToRealm(data: DogsResponse): DogsResponse {
+  private fun writeToRealm(data: DogsResponse) {
     val realm = Realm.getDefaultInstance()
     var dogsResponse = findInRealm()
     realm.executeTransaction {
@@ -87,14 +86,13 @@ class DogRestRepository(private val dogApi: DogApi, private val realm: Realm) : 
       it.insertOrUpdate(data)
     }
     realm.close()
-    return data
   }
 
   private fun findInRealm(): DogsResponse? {
     val realm = Realm.getDefaultInstance()
     var data: DogsResponse? = realm.where(DogsResponse::class.java).findFirst()
     realm.close()
-    if(data == null) {
+    if (data == null) {
       data = DogsResponse()
     }
     return data
