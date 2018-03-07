@@ -5,6 +5,7 @@ import io.heartworks.cleanapplication.dog.view.DogsListActivity
 import io.heartworks.cleanapplication.dog.presentation.DogsListPresenter
 import io.heartworks.cleanapplication.dog.view.DogsListFragment
 import io.heartworks.cleanapplication.injection.AppModule
+import io.heartworks.cleanapplication.injection.DatabaseModule
 import io.heartworks.cleanapplication.injection.NetworkModule
 import io.heartworks.cleanapplication.injection.PresentationModule
 import javax.inject.Singleton
@@ -20,6 +21,7 @@ import javax.inject.Singleton
   (AppModule::class),
   (DogModule::class),
   (NetworkModule::class),
+  (DatabaseModule::class),
   (PresentationModule::class)
 ])
 interface DogComponent {

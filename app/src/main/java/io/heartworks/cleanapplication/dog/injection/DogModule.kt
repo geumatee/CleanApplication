@@ -5,6 +5,7 @@ import dagger.Provides
 import io.heartworks.cleanapplication.dog.networking.DogApi
 import io.heartworks.cleanapplication.dog.repository.DogRepository
 import io.heartworks.cleanapplication.dog.repository.DogRestRepository
+import io.realm.Realm
 import retrofit2.Retrofit
 import javax.inject.Singleton
 
@@ -23,9 +24,9 @@ class DogModule {
    */
   @Provides
   @Singleton
-  fun provideDogsRepository(retrofit: Retrofit): DogRepository {
+  fun provideDogsRepository(retrofit: Retrofit, realm: Realm): DogRepository {
     // You can decide by whatever params which repo you want to inject
 
-    return DogRestRepository(retrofit.create(DogApi::class.java))
+    return DogRestRepository(retrofit.create(DogApi::class.java), realm)
   }
 }
