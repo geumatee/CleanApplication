@@ -5,6 +5,9 @@ import io.heartworks.cleanapplication.injection.AppModule
 import io.heartworks.cleanapplication.injection.ApplicationComponent
 import io.heartworks.cleanapplication.injection.DaggerApplicationComponent
 import io.realm.Realm
+import io.realm.RealmConfiguration
+
+
 
 /**
  * Created by geuma on 3/5/2018.
@@ -56,5 +59,9 @@ class KotlinApplication : Application() {
     appComponent = component
 
     Realm.init(this)
+    val realmConfiguration = RealmConfiguration.Builder()
+        .deleteRealmIfMigrationNeeded()
+        .build()
+    Realm.setDefaultConfiguration(realmConfiguration)
   }
 }

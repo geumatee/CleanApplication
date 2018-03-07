@@ -7,6 +7,7 @@ import io.heartworks.cleanapplication.dog.repository.DogRepository
 import io.heartworks.cleanapplication.dog.view.DogsListView
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.realm.Realm
 import net.grandcentrix.thirtyinch.TiPresenter
 import net.grandcentrix.thirtyinch.rx2.RxTiPresenterDisposableHandler
 import java.util.concurrent.TimeUnit
@@ -41,6 +42,9 @@ class DogsListPresenter : TiPresenter<DogsListView>() {
    */
   @Inject
   lateinit var repository: DogRepository
+
+  @Inject
+  lateinit var realm: Realm
 
   /**
    * Unsubscribes rx subscriptions when needed
@@ -120,5 +124,10 @@ class DogsListPresenter : TiPresenter<DogsListView>() {
     val viewModel = view.getViewModel()
     viewModel.setDogs(dogs)
     viewModel.setLoading(false)
+  }
+
+  override fun onDestroy() {
+    realm.close()
+    super.onDestroy()
   }
 }

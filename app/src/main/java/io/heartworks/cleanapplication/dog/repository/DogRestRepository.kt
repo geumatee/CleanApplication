@@ -13,8 +13,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import io.realm.Realm
 import io.realm.RealmList
-import io.realm.RealmModel
-import java.util.Locale.filter
 
 /**
  * Created by geuma on 3/5/2018.
@@ -43,9 +41,10 @@ class DogRestRepository(private val dogApi: DogApi, private val realm: Realm) : 
           data.error = it.message
           return@onErrorReturn data
         }
+        .observeOn(AndroidSchedulers.mainThread())
         .flatMapPublisher<RealmList<Dog>?> { dogsResponse: DogsResponse ->
           if (dogsResponse.error == null) {
-            DogsResponse::class.java.writeToRealm(
+            DogsResponse::class.java.writeToRealm(realm,
                 {
                   it ->
                   it.data.clear()
@@ -57,11 +56,10 @@ class DogRestRepository(private val dogApi: DogApi, private val realm: Realm) : 
           }
           return@flatMapPublisher Flowable.just(dogsResponse.data)
         }
-        .observeOn(AndroidSchedulers.mainThread())
         .filter {
           it.isNotEmpty()
         }
-    val cache = Flowable.just(DogsResponse::class.java.findInRealm()?.data)
+    val cache = Flowable.just(DogsResponse::class.java.findInRealm(realm)?.data)
                         .filter {
                           it.isNotEmpty()
                         }

@@ -8,16 +8,12 @@ import io.realm.RealmModel
  */
 
 
-fun <E : RealmModel> Class<E>.findInRealm(): E? {
-  val realm = Realm.getDefaultInstance()
-  val data: E? = realm.where(this).findFirst()
-  realm.close()
-  return data
+fun <E : RealmModel> Class<E>.findInRealm(realm: Realm): E? {
+  return realm.where(this).findFirst()
 }
 
-fun <E : RealmModel> Class<E>.writeToRealm(listener: (E) -> E) {
-  val realm = Realm.getDefaultInstance()
-  var data = this.findInRealm()
+fun <E : RealmModel> Class<E>.writeToRealm(realm: Realm, listener: (E) -> E) {
+  var data = this.findInRealm(realm)
   realm.executeTransaction {
     if (data == null) {
       data = it.createObject(this)
@@ -28,5 +24,4 @@ fun <E : RealmModel> Class<E>.writeToRealm(listener: (E) -> E) {
     }
     it.insertOrUpdate(data!!)
   }
-  realm.close()
 }
