@@ -6,16 +6,15 @@ import android.util.Log
 import io.heartworks.cleanapplication.dog.data.Dog
 import io.heartworks.cleanapplication.dog.networking.DogApi
 import io.heartworks.cleanapplication.dog.networking.DogsResponse
-import io.reactivex.BackpressureStrategy
+import io.heartworks.cleanapplication.utils.findInRealm
+import io.heartworks.cleanapplication.utils.writeToRealm
 import io.reactivex.Flowable
-import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import io.realm.Realm
 import io.realm.RealmList
 import io.realm.RealmModel
-import io.realm.RealmQuery
-import org.reactivestreams.Publisher
+import java.util.Locale.filter
 
 /**
  * Created by geuma on 3/5/2018.
@@ -46,7 +45,7 @@ class DogRestRepository(private val dogApi: DogApi, private val realm: Realm) : 
         }
         .flatMapPublisher<RealmList<Dog>?> { dogsResponse: DogsResponse ->
           if (dogsResponse.error == null) {
-            writeToRealm(DogsResponse::class.java,
+            DogsResponse::class.java.writeToRealm(
                 {
                   it ->
                   it.data.clear()
@@ -62,7 +61,7 @@ class DogRestRepository(private val dogApi: DogApi, private val realm: Realm) : 
         .filter {
           it.isNotEmpty()
         }
-    val cache = Flowable.just(findInRealm(DogsResponse::class.java)?.data)
+    val cache = Flowable.just(DogsResponse::class.java.findInRealm()?.data)
                         .filter {
                           it.isNotEmpty()
                         }
@@ -73,29 +72,5 @@ class DogRestRepository(private val dogApi: DogApi, private val realm: Realm) : 
           return@flatMap Flowable.just(list.toList())
         }
         .distinct()
-
-  }
-
-  private fun <E : RealmModel> writeToRealm(clazz: Class<E>, listener: (E) -> E) {
-    val realm = Realm.getDefaultInstance()
-    var data = findInRealm(clazz)
-    realm.executeTransaction {
-      if (data == null) {
-        data = it.createObject(clazz)
-      }
-      data = listener.invoke(data!!)
-      if (data != null) {
-        it.insertOrUpdate(data!!)
-      }
-      it.insertOrUpdate(data!!)
-    }
-    realm.close()
-  }
-
-  private fun <E : RealmModel> findInRealm(clazz: Class<E>): E? {
-    val realm = Realm.getDefaultInstance()
-    val data: E? = realm.where(clazz).findFirst()
-    realm.close()
-    return data
   }
 }
